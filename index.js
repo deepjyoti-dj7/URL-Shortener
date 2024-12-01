@@ -1,10 +1,15 @@
 const express = require("express");
 const path = require("path");
+const cookieParser = require("cookie-parser");
 const { connectDB } = require("./config/database");
+const { restrictToLoggedinUserOnly, checkAuth } = require("./middlewares/auth");
+
+const URL = require("./models/url");
 
 const urlRoute = require("./routes/url");
 const staticRoute = require("./routes/staticRouter");
-const URL = require("./models/url");
+const userRoute = require("./routes/user");
+const testRoute = require("./routes/test");
 
 const app = express();
 const PORT = 7001;
@@ -16,16 +21,13 @@ connectDB().then(() => console.log("Database Connected"));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
-app.get("/test", async (req, res) => {
-  const allURLs = await URL.find({});
-  return res.render("home", {
-    urls: allURLs,
-  });
-});
+app.get("/test", testRoute);
 
-app.use("/url", urlRoute);
-app.use("/", staticRoute);
+app.use("/url", restrictToLoggedinUserOnly, urlRoute);
+app.use("/user", userRoute);
+app.use("/", checkAuth, staticRoute);
 
 app.get("/url/:shortId", async (req, res) => {
   const shortId = req.params.shortId;
