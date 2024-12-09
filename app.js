@@ -12,7 +12,7 @@ const userRoute = require("./routes/user");
 const testRoute = require("./routes/test");
 
 const app = express();
-const PORT = 7001;
+const PORT = process.env.PORT || 7001;
 
 app.set("view engine", "ejs");
 app.set("views", path.resolve("./views"));
